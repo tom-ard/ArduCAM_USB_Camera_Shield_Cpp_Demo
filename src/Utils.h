@@ -17,4 +17,7 @@ void showHelp();
 bool camera_initFromFile(std::string filename, ArduCamHandle &cameraHandle, ArduCamCfg &cameraCfg, int &color_mode, int index = 0);
 cv::Mat ConvertImage(ArduCamOutData* frameData, int color_mode);
 cv::Mat UnpackRaw10(ArduCamOutData* frameData, int drop_row = 0);
+
+cv::Mat RGBToMat(uint16_t* data, int bitWidth, int Width, int Height);
+cv::Mat IRToMat(uint16_t* data, int bitWidth, int Width, int Height);
 #endif // !

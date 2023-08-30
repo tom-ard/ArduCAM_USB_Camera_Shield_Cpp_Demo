@@ -68,7 +68,7 @@ bool camera_initFromFile(std::string filename, ArduCamHandle &cameraHandle, Ardu
 	case 4: cameraCfg.emImageFmtMode = FORMAT_MODE_MON; break;
 	case 5: cameraCfg.emImageFmtMode = FORMAT_MODE_RAW_D; break;
 	case 6: cameraCfg.emImageFmtMode = FORMAT_MODE_MON_D; break;
-	default: break;
+	default: cameraCfg.emImageFmtMode = FORMAT_MODE_RAW; break;
 	}
 
 	cameraCfg.u32Width = cam_param->width;
@@ -122,6 +122,8 @@ bool camera_initFromFile(std::string filename, ArduCamHandle &cameraHandle, Ardu
 		std::cout << "Cannot open camera.rtn_val = " << ret_val << std::endl;
 		return false;
 	}
+
+	cameraCfg.emImageFmtMode = (format_mode)(cam_param->format >> 8);
 
 	return true;
 }
@@ -209,6 +211,31 @@ cv::Mat RGB565toMat(Uint8* bytes, int width, int height, int color_mode) {
 	return image;
 }
 
+cv::Mat RGBToMat(uint16_t* data, int bitWidth, int Width, int Height) {
+	uint32_t size = Width * Height * 3;
+	uint8_t* temp_data = (uint8_t*)malloc(size);
+	for (int i = 0; i < size; i++) {
+		uint8_t temp = data[i] >> (bitWidth - 8);
+		temp_data[i] = temp;
+	}
+	cv::Mat image = cv::Mat(Height, Width, CV_8UC3);
+	memcpy(image.data, temp_data, size);
+	free(temp_data);
+	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+	return image;
+}
+
+cv::Mat IRToMat(uint16_t* data, int bitWidth, int Width, int Height) {
+	uint32_t size = Width * Height;
+	uint8_t* temp_data = (uint8_t*)malloc(size);
+	for (int i = 0; i < size; i++) {
+		uint8_t temp = data[i] >> (bitWidth - 8);
+		temp_data[i] = temp;
+	}
+	cv::Mat image = cv::Mat(Height, Width, CV_8UC1, temp_data);
+	free(temp_data);
+	return image;
+}
 
 cv::Mat dBytesToMat(Uint8* bytes, int bit_width, int width, int height) {
 	unsigned char* temp_data = (unsigned char*)malloc(width * height);

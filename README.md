@@ -9,6 +9,7 @@
 1. opencv
 2. arducam-usb-sdk-dev
 3. arducam-config-parser-dev
+4. arducam-usb-rgbir-parse-tools
 
 ```
 sudo apt install libopencv-dev
