@@ -23,7 +23,7 @@
 #include "Utils.h"
 #include "Arducam.hpp"
 
-#include "ArducamRGBIRParseTools.h"
+#include "arducam_rgbir_debayer.h"
 
 using namespace std;
 using namespace cv;

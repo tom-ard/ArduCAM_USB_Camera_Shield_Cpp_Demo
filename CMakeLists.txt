@@ -80,7 +80,7 @@ if (UNIX)
         -lArduCamLib 
         -larducam_config_parser
         -lpthread
-        -lArducamRGBIRParseTools
+        -larducam_rgbir_debayer
         ${OpenCV_LIBS}
     )
 endif(UNIX)
