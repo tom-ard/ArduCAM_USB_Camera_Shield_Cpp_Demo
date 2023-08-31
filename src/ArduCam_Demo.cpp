@@ -37,13 +37,6 @@ void delay_ms(int mills) {
 #endif
 }
 
-std::map<uint8_t, uint8_t> fill_count_dict = {
-    {0x01, 1},
-    {0x03, 2},
-    {0x07, 3},
-    {0x0F, 4}
-};
-
 static void display_fps(int index) {
 	static thread_local int frame_count = 0;
 	static thread_local time_t start = time(NULL);
@@ -64,9 +57,6 @@ void display(ArducamCamera *camera, int index) {
 	uint32_t col = camera->cameraCfg.u32Width;
 	uint32_t bitWidth = camera->cameraCfg.u8PixelBits;
 	uint16_t* pu16ImageData = (uint16_t*)malloc(row * col * sizeof(uint16_t));
-	uint16_t* tmp = (uint16_t*)malloc((row + 4) * (col + 4) * sizeof(uint16_t));
-	memset(tmp, 0, (row + 4) * (col + 4) * sizeof(uint16_t));
-	std::vector<uint16_t> rgb(row * col * 3, 0), ir(row * col, 0);
 	while (true) {
 		ArduCamOutData* frameData;
 		if (!camera->read(frameData)) {
@@ -76,15 +66,9 @@ void display(ArducamCamera *camera, int index) {
 
 		if ((int)camera->cameraCfg.emImageFmtMode == 9) {
 			Convert8To16Buffer(pu16ImageData, frameData->pu8ImageData, frameData->stImagePara.u8PixelBits, frameData->stImagePara.u32Size);
-			uint8_t rows_fill_count = fill_count_dict[(camera->color_mode >> 4) & 0x0F];
-			uint8_t cols_fill_count = fill_count_dict[camera->color_mode & 0x0F];
-			fill(tmp, pu16ImageData, row, col, rows_fill_count, cols_fill_count);
-			std::map<std::string, std::vector<uint16_t>> results = processRgbIr16BitData(tmp, row + 4, col + 4);
-			cropRGBImage(rgb.data(), results["rgb"].data(), row, col);
-			cropIRImage(ir.data(), results["ir_full"].data(), row, col);
-			cv::Mat rgb_img = RGBToMat(rgb.data(), bitWidth, col, row);
-			cv::Mat ir_full_img = IRToMat(ir.data(), bitWidth, col, row);
-			cv::cvtColor(ir_full_img, ir_full_img, cv::COLOR_GRAY2BGR);
+			std::tuple<std::vector<uint16_t>, std::vector<uint16_t>> results = processRgbIr16BitData(pu16ImageData, row, col, camera->color_mode);
+			cv::Mat rgb_img = RGBToMat(std::get<0>(results).data(), col, row);
+			cv::Mat ir_full_img = IRToMat(std::get<1>(results).data(), col, row);
 			cv::hconcat(rgb_img, ir_full_img, image);
 		} else {
 			image = ConvertImage(frameData, camera->color_mode);
@@ -111,7 +95,6 @@ void display(ArducamCamera *camera, int index) {
 	}
 
 	free(pu16ImageData);
-	free(tmp);
 
 	camera->stop();
 

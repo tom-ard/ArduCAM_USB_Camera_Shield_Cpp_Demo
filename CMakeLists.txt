@@ -65,6 +65,7 @@ if (WIN32)
         ${APP_NAME} 
         ArduCamLib
         arducam_config_parser
+        arducam_rgbir_debayer
         ${OpenCV_LIBS}
     )
 endif(WIN32)

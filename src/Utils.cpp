@@ -211,29 +211,15 @@ cv::Mat RGB565toMat(Uint8* bytes, int width, int height, int color_mode) {
 	return image;
 }
 
-cv::Mat RGBToMat(uint16_t* data, int bitWidth, int Width, int Height) {
-	uint32_t size = Width * Height * 3;
-	uint8_t* temp_data = (uint8_t*)malloc(size);
-	for (int i = 0; i < size; i++) {
-		uint8_t temp = data[i] >> (bitWidth - 8);
-		temp_data[i] = temp;
-	}
-	cv::Mat image = cv::Mat(Height, Width, CV_8UC3);
-	memcpy(image.data, temp_data, size);
-	free(temp_data);
+cv::Mat RGBToMat(uint16_t* data, int Width, int Height) {
+	cv::Mat image = cv::Mat(Height, Width, CV_16UC3, data);
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 	return image;
 }
 
-cv::Mat IRToMat(uint16_t* data, int bitWidth, int Width, int Height) {
-	uint32_t size = Width * Height;
-	uint8_t* temp_data = (uint8_t*)malloc(size);
-	for (int i = 0; i < size; i++) {
-		uint8_t temp = data[i] >> (bitWidth - 8);
-		temp_data[i] = temp;
-	}
-	cv::Mat image = cv::Mat(Height, Width, CV_8UC1, temp_data);
-	free(temp_data);
+cv::Mat IRToMat(uint16_t* data, int Width, int Height) {
+	cv::Mat image = cv::Mat(Height, Width, CV_16UC1, data);
+	cv::cvtColor(image, image, cv::COLOR_GRAY2BGR);
 	return image;
 }
 
